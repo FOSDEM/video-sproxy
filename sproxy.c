@@ -15,6 +15,8 @@
 #include <errno.h>
 #include <err.h>
 
+#include "config.h"
+
 #define err_x(x...) errx(1, ## x)
 #define err_e(x...) err(errno, ## x)
 
@@ -24,20 +26,11 @@
 // Assert and print errno (for syscalls)
 #define ASSERTF_E(c, x...) if (!(c)) err(errno, ## x)
 
-#define DEBUG
-
 #ifdef DEBUG
 #define debugprintf(x...) if(debug) fprintf(stderr, ## x)
 #else
 #define debugprintf(x...)
 #endif
-
-static bool debug=true;
-
-#define PORT 8899
-#define MAXFD 32
-#define BUFFSIZE (2048*1024)
-#define WRSIZE 65536
 
 #define STATE_UNUSED 0
 #define STATE_READING 1

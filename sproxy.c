@@ -74,6 +74,8 @@ int main(){
 
 	nonblock(receivers[0].fd);
 
+	// setup accept socket
+
 	ASSERTF_E((acceptfd = socket(AF_INET, SOCK_STREAM, 0))!=-1, "socket");
 
 	memset(&saddr, 0, sizeof(saddr));
@@ -86,7 +88,7 @@ int main(){
 
 	ASSERTF_E(bind(acceptfd, (struct sockaddr *) &saddr, sizeof(saddr))==0, "bind");
 	ASSERTF_E(listen(acceptfd, 2)!=-1, "listen");
-	// XXX set reuseaddr somewhere
+
 	nonblock(acceptfd);
 
 	signal(SIGPIPE, SIG_IGN);
@@ -153,9 +155,6 @@ int main(){
 		}
 
 	}
-
-	
-
 
 	return 0;
 }

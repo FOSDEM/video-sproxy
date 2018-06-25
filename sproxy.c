@@ -96,13 +96,13 @@ int main(){
 		FD_ZERO(&writes);
 		FD_ZERO(&other);
 		
-		to.tv_sec=2;
+		to.tv_sec=0;
 		to.tv_usec=100*1000;
 
 		for (i=0; i<MAXFD; i++) {
 			if (receivers[i].state == STATE_UNUSED) continue;
 			if (receivers[i].state == STATE_READING) FD_SET(receivers[i].fd, &reads);
-			if (receivers[i].state == STATE_WRITING) FD_SET(receivers[i].fd, &writes);
+			if (receivers[i].state == STATE_WRITING && receivers[i].pos!=receivers[0].pos) FD_SET(receivers[i].fd, &writes);
 		}
 		FD_SET(acceptfd, &reads);
 

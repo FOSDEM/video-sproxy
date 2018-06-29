@@ -1,4 +1,4 @@
-CC=gcc -Wall -O3 -g -lpthread
+CC=gcc -Wall -O3 -g -lpthread -std=c99
 
 
 TARGETS=sproxy

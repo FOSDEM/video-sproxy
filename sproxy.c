@@ -6,6 +6,7 @@
 #include <string.h>
 #include <stdint.h>
 #include <sys/param.h>
+#include <sys/select.h>
 #include <stdbool.h>
 
 #include <sys/socket.h>
@@ -49,7 +50,7 @@ struct receiver {
 };
 
 int main(){
-	struct receiver receivers[MAXFD];
+	struct receiver receivers[MAXFD+1];
 	fd_set reads, writes, other;
 	int acceptfd;
 	int i;

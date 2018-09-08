@@ -49,13 +49,37 @@ struct receiver {
 	int state;
 };
 
+int getlistenfd(int port) {
+	int fd;
+	struct sockaddr_in saddr;
+
+	ASSERTF_E((fd = socket(AF_INET, SOCK_STREAM, 0))!=-1, "socket");
+
+	memset(&saddr, 0, sizeof(saddr));
+	saddr.sin_addr.s_addr = INADDR_ANY;
+	saddr.sin_port = htons(port);
+	saddr.sin_family = AF_INET;
+
+	setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &(int){ 1 }, sizeof(int));
+#ifdef SO_REUSEPORT
+	setsockopt(fd, SOL_SOCKET, SO_REUSEPORT, &(int){ 1 }, sizeof(int));
+#endif
+
+	ASSERTF_E(bind(fd, (struct sockaddr *) &saddr, sizeof(saddr))==0, "bind");
+	ASSERTF_E(listen(fd, 2)!=-1, "listen");
+
+	nonblock(fd);
+
+	return fd;
+
+}
+
 int main(){
 	struct receiver receivers[MAXFD+1];
 	fd_set reads, writes, other;
-	int acceptfd;
+	int acceptfd, acceptfd_buf;
 	int i;
 	ssize_t sz;
-	struct sockaddr_in saddr;
 	struct timeval to;
 
 	uint8_t buffer[BUFFSIZE];
@@ -70,24 +94,9 @@ int main(){
 
 	nonblock(receivers[0].fd);
 
-	// setup accept socket
 
-	ASSERTF_E((acceptfd = socket(AF_INET, SOCK_STREAM, 0))!=-1, "socket");
-
-	memset(&saddr, 0, sizeof(saddr));
-	saddr.sin_addr.s_addr = INADDR_ANY;
-	saddr.sin_port = htons(PORT);
-	saddr.sin_family = AF_INET;
-
-	setsockopt(acceptfd, SOL_SOCKET, SO_REUSEADDR, &(int){ 1 }, sizeof(int));
-#ifdef SO_REUSEPORT
-	setsockopt(acceptfd, SOL_SOCKET, SO_REUSEPORT, &(int){ 1 }, sizeof(int));
-#endif
-
-	ASSERTF_E(bind(acceptfd, (struct sockaddr *) &saddr, sizeof(saddr))==0, "bind");
-	ASSERTF_E(listen(acceptfd, 2)!=-1, "listen");
-
-	nonblock(acceptfd);
+	acceptfd = getlistenfd(PORT);
+	acceptfd_buf = getlistenfd(PORTBUF);
 
 	signal(SIGPIPE, SIG_IGN);
 
@@ -105,15 +114,34 @@ int main(){
 			if (receivers[i].state == STATE_WRITING && receivers[i].pos!=receivers[0].pos) FD_SET(receivers[i].fd, &writes);
 		}
 		FD_SET(acceptfd, &reads);
+		FD_SET(acceptfd_buf, &reads);
 
 		select (MAXFD, &reads, &writes, &other, &to);
 
 		if (FD_ISSET(acceptfd, &reads)) {
 			for (i=0;i<MAXFD;i++) if (receivers[i].state == STATE_UNUSED) break;
-			ASSERTF(receivers[i].state == STATE_UNUSED, "no sockets available");
-			receivers[i].state=STATE_WRITING;
-			receivers[i].pos=receivers[0].pos;
-			receivers[i].fd=accept(acceptfd, NULL, NULL);
+			if (receivers[i].state != STATE_UNUSED) {
+				int rfd = accept(acceptfd, NULL, NULL);
+				close(rfd);
+			} else {
+				receivers[i].state=STATE_WRITING;
+				receivers[i].pos=receivers[0].pos;
+				receivers[i].fd=accept(acceptfd, NULL, NULL);
+			}
+		}
+
+		if (FD_ISSET(acceptfd_buf, &reads)) {
+			for (i=0;i<MAXFD;i++) if (receivers[i].state == STATE_UNUSED) break;
+			if (receivers[i].state != STATE_UNUSED) {
+				int rfd = accept(acceptfd_buf, NULL, NULL);
+				close(rfd);
+			} else {
+				receivers[i].state=STATE_WRITING;
+				// start not from the current posistion, but somewhere in the back
+				receivers[i].pos=(receivers[0].pos+BUFFSIZE/2) % BUFFSIZE;
+				receivers[i].fd=accept(acceptfd_buf, NULL, NULL);
+			}
+
 		}
 
 		for (i=0; i<MAXFD; i++) {

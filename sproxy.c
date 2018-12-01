@@ -127,6 +127,7 @@ int main(){
 				receivers[i].state=STATE_WRITING;
 				receivers[i].pos=receivers[0].pos;
 				receivers[i].fd=accept(acceptfd, NULL, NULL);
+				nonblock(receivers[i].fd);
 			}
 		}
 
@@ -140,6 +141,7 @@ int main(){
 				// start not from the current posistion, but somewhere in the back
 				receivers[i].pos=(receivers[0].pos+BUFFSIZE/2) % BUFFSIZE;
 				receivers[i].fd=accept(acceptfd_buf, NULL, NULL);
+				nonblock(receivers[i].fd);
 			}
 
 		}
@@ -152,6 +154,9 @@ int main(){
 				ASSERTF(sz!=0, "eof on stdin");
 				if (sz==-1 && errno!=EAGAIN) {
 					ASSERTF_E(1, "read");
+				}
+				if (sz == -1 && errno==EAGAIN) {
+					continue;
 				}
 				for (int j=0; j<MAXFD; j++) {
 					if (receivers[j].state == STATE_WRITING && receivers[j].pos>receivers[i].pos && receivers[j].pos<=receivers[i].pos+sz ) {
@@ -175,7 +180,9 @@ int main(){
 					debugprintf("client %d fd %d died\n", i, receivers[i].fd);
 					memset(&receivers[i], 0, sizeof(struct receiver));
 				}
-				receivers[i].pos = (receivers[i].pos + sz) % BUFFSIZE;
+				if (sz > 0) {
+					receivers[i].pos = (receivers[i].pos + sz) % BUFFSIZE;
+				}
 				continue;
 			}
 		}

@@ -35,7 +35,7 @@ jobs:
     - run: tar -czvf sproxy-${CIRCLE_TAG}.armhf.tar.gz build/sproxy-armhf
     - run: > 
         for tarfile in sproxy-*.tar.gz ; do
-          ${HOME}/bin/github-release --verbose upload \
+          ${HOME}/bin/github-release upload \
             --user "${CIRCLE_PROJECT_USERNAME}" \
             --repo "${CIRCLE_PROJECT_REPONAME}" \
             --tag "${CIRCLE_TAG}" \

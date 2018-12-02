@@ -1,6 +1,6 @@
 # simple proxy
 
-[![CircleCI](https://circleci.com/gh/FOSDEM/sproxy.svg?style=svg)](https://circleci.com/gh/FOSDEM/sproxy)
+[![CircleCI](https://circleci.com/gh/FOSDEM/video-sproxy.svg?style=svg)](https://circleci.com/gh/FOSDEM/video-sproxy)
 
 Usage: ffmpeg... | ./sproxy
 

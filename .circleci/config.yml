@@ -15,6 +15,10 @@ jobs:
     - run: mv -v sproxy build/sproxy-amd64
     - run: CC=arm-linux-gnueabihf-gcc make
     - run: mv -v sproxy build/sproxy-armhf
+    - persist_to_workspace:
+        root: .
+        paths:
+        - build
     - store_artifacts:
         path: build
 

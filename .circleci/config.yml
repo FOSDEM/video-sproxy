@@ -27,12 +27,14 @@ jobs:
     - image: circleci/golang:1.11
 
     steps:
+    - run: sudo apt-get update
+    - run: sudo apt-get -y install fakeroot
     - run: mkdir -v -p ${HOME}/bin
     - run: curl -L 'https://github.com/aktau/github-release/releases/download/v0.7.2/linux-amd64-github-release.tar.bz2' | tar xvjf - --strip-components 3 -C ${HOME}/bin
     - attach_workspace:
         at: .
-    - run: tar -czvf sproxy-${CIRCLE_TAG}.amd64.tar.gz build/sproxy-amd64
-    - run: tar -czvf sproxy-${CIRCLE_TAG}.armhf.tar.gz build/sproxy-armhf
+    - run: cd build && fakeroot tar -czvf sproxy-${CIRCLE_TAG}.amd64.tar.gz sproxy-amd64
+    - run: cd build && fakeroot tar -czvf sproxy-${CIRCLE_TAG}.armhf.tar.gz sproxy-armhf
     - run: > 
         for tarfile in sproxy-*.tar.gz ; do
           ${HOME}/bin/github-release upload \

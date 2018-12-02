@@ -1,5 +1,7 @@
 # simple proxy
 
+[![CircleCI](https://circleci.com/gh/FOSDEM/sproxy.svg?style=svg)](https://circleci.com/gh/FOSDEM/sproxy)
+
 Usage: ffmpeg... | ./sproxy
 
 It will listen on port 8899 and send whatever is currently being received from

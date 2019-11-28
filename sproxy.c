@@ -37,6 +37,8 @@
 #define STATE_READING 1
 #define STATE_WRITING 2
 
+#define HTTP_REPLY "HTTP/1.0 200 OK\r\n\r\nConnection: close\r\nContent-Type: octet/stream\r\n\r\n"
+
 void nonblock(int fd) {
 	long flags;
 	flags = fcntl( fd, F_GETFL, 0 );
@@ -47,6 +49,8 @@ struct receiver {
 	int fd;
 	size_t pos;
 	int state;
+	char *extra;
+	size_t extralen;
 };
 
 int getlistenfd(int port) {
@@ -77,7 +81,7 @@ int getlistenfd(int port) {
 int main(){
 	struct receiver receivers[MAXFD+1];
 	fd_set reads, writes, other;
-	int acceptfd, acceptfd_buf;
+	int acceptfd, acceptfd_buf, acceptfd_http;
 	int i;
 	ssize_t sz;
 	struct timeval to;
@@ -97,6 +101,7 @@ int main(){
 
 	acceptfd = getlistenfd(PORT);
 	acceptfd_buf = getlistenfd(PORTBUF);
+	acceptfd_http = getlistenfd(PORTHTTP);
 
 	signal(SIGPIPE, SIG_IGN);
 
@@ -115,6 +120,7 @@ int main(){
 		}
 		FD_SET(acceptfd, &reads);
 		FD_SET(acceptfd_buf, &reads);
+		FD_SET(acceptfd_http, &reads);
 
 		select (MAXFD, &reads, &writes, &other, &to);
 
@@ -146,6 +152,25 @@ int main(){
 
 		}
 
+		if (FD_ISSET(acceptfd_http, &reads)) {
+			for (i=0;i<MAXFD;i++) if (receivers[i].state == STATE_UNUSED) break;
+			if (receivers[i].state != STATE_UNUSED) {
+				int rfd = accept(acceptfd_http, NULL, NULL);
+				close(rfd);
+			} else {
+				receivers[i].state=STATE_WRITING;
+				receivers[i].extra = HTTP_REPLY;
+				receivers[i].extralen = strlen(HTTP_REPLY);
+				// start not from the current posistion, but somewhere in the back
+				receivers[i].state=STATE_WRITING;
+				receivers[i].pos=receivers[0].pos;
+				receivers[i].fd=accept(acceptfd_http, NULL, NULL);
+				nonblock(receivers[i].fd);
+			}
+
+		}
+
+
 		for (i=0; i<MAXFD; i++) {
 			// hateswitchcase
 			if (receivers[i].state == STATE_UNUSED) continue;
@@ -170,6 +195,24 @@ int main(){
 			}
 
 			if (receivers[i].state == STATE_WRITING && FD_ISSET(receivers[i].fd, &writes)) {
+				if (receivers[i].extra!=NULL && receivers[i].extralen!=0) {
+					sz = write(receivers[i].fd, receivers[i].extra, receivers[i].extralen);
+					if (sz == -1 && errno!=EAGAIN) {
+						close(receivers[i].fd);
+						debugprintf("client %d fd %d died\n", i, receivers[i].fd);
+						memset(&receivers[i], 0, sizeof(struct receiver));
+					}
+					if (sz > 0) {
+						receivers[i].extralen -= sz;
+						receivers[i].extra += sz;
+					}
+					if (receivers[i].extralen<=0) {
+						receivers[i].extra = NULL;
+						receivers[i].extralen = 0;
+					}
+					continue;
+				
+				}
 				ssize_t writesize = receivers[0].pos-receivers[i].pos;
 				if (writesize<0) writesize = BUFFSIZE-receivers[i].pos;
 				if (writesize==0) continue;

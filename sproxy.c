@@ -53,6 +53,13 @@ struct receiver {
 	size_t extralen;
 };
 
+struct accepter {
+	int fd;
+	int port;
+	int http;
+	int bufpos;
+};
+
 int getlistenfd(int port) {
 	int fd;
 	struct sockaddr_in saddr;
@@ -78,10 +85,19 @@ int getlistenfd(int port) {
 
 }
 
+void setupaccepter(struct accepter *acc, int port, int http, int bufpos) {
+	acc->port = port;
+	acc->http = http;
+	acc->bufpos = bufpos;
+	acc->fd = getlistenfd(port);
+}
+
+#define ACCEPTERS 3
+
 int main(){
 	struct receiver receivers[MAXFD+1];
+	struct accepter accepters[MAXFD];
 	fd_set reads, writes, other;
-	int acceptfd, acceptfd_buf, acceptfd_http;
 	int i;
 	ssize_t sz;
 	struct timeval to;
@@ -92,16 +108,16 @@ int main(){
 
 	memset(receivers, 0, sizeof(receivers));
 	memset(buffer, 0, sizeof(buffer));
+	memset(accepters, 0, sizeof(accepters));
 
 	receivers[0].fd = STDIN_FILENO;
 	receivers[0].state = STATE_READING;
 
 	nonblock(receivers[0].fd);
 
-
-	acceptfd = getlistenfd(PORT);
-	acceptfd_buf = getlistenfd(PORTBUF);
-	acceptfd_http = getlistenfd(PORTHTTP);
+	setupaccepter(&accepters[0], PORT, 0, 0);
+	setupaccepter(&accepters[1], PORTBUF, 1, 0);
+	setupaccepter(&accepters[2], PORTHTTP, 0, 1);
 
 	signal(SIGPIPE, SIG_IGN);
 
@@ -118,58 +134,38 @@ int main(){
 			if (receivers[i].state == STATE_READING) FD_SET(receivers[i].fd, &reads);
 			if (receivers[i].state == STATE_WRITING && receivers[i].pos!=receivers[0].pos) FD_SET(receivers[i].fd, &writes);
 		}
-		FD_SET(acceptfd, &reads);
-		FD_SET(acceptfd_buf, &reads);
-		FD_SET(acceptfd_http, &reads);
+
+		for (int l=0;accepters[l].fd!=0;l++) FD_SET(accepters[l].fd, &reads);
 
 		select (MAXFD, &reads, &writes, &other, &to);
 
-		if (FD_ISSET(acceptfd, &reads)) {
-			for (i=0;i<MAXFD;i++) if (receivers[i].state == STATE_UNUSED) break;
-			if (receivers[i].state != STATE_UNUSED) {
-				int rfd = accept(acceptfd, NULL, NULL);
-				close(rfd);
-			} else {
-				receivers[i].state=STATE_WRITING;
-				receivers[i].pos=receivers[0].pos;
-				receivers[i].fd=accept(acceptfd, NULL, NULL);
-				nonblock(receivers[i].fd);
+		for (int l=0;accepters[l].fd!=0;l++) {
+			if (FD_ISSET(accepters[l].fd, &reads)) {
+				for (i=0;i<MAXFD;i++) 
+					if (receivers[i].state == STATE_UNUSED) break;
+
+				if (receivers[i].state != STATE_UNUSED) {
+					int rfd = accept(accepters[l].fd, NULL, NULL);
+					close(rfd);
+				} else {
+					receivers[i].state=STATE_WRITING;
+					receivers[i].fd=accept(accepters[l].fd, NULL, NULL);
+					nonblock(receivers[i].fd);
+
+					if (accepters[l].bufpos == 0) {
+						receivers[i].pos=receivers[0].pos;
+					} else {
+						// start not from the current posistion, but somewhere in the back
+						receivers[i].pos=(receivers[0].pos+BUFFSIZE/2) % BUFFSIZE;
+					}
+
+					if (accepters[l].http !=0) {
+						receivers[i].extra = HTTP_REPLY;
+						receivers[i].extralen = strlen(HTTP_REPLY);
+					}
+				}
 			}
 		}
-
-		if (FD_ISSET(acceptfd_buf, &reads)) {
-			for (i=0;i<MAXFD;i++) if (receivers[i].state == STATE_UNUSED) break;
-			if (receivers[i].state != STATE_UNUSED) {
-				int rfd = accept(acceptfd_buf, NULL, NULL);
-				close(rfd);
-			} else {
-				receivers[i].state=STATE_WRITING;
-				// start not from the current posistion, but somewhere in the back
-				receivers[i].pos=(receivers[0].pos+BUFFSIZE/2) % BUFFSIZE;
-				receivers[i].fd=accept(acceptfd_buf, NULL, NULL);
-				nonblock(receivers[i].fd);
-			}
-
-		}
-
-		if (FD_ISSET(acceptfd_http, &reads)) {
-			for (i=0;i<MAXFD;i++) if (receivers[i].state == STATE_UNUSED) break;
-			if (receivers[i].state != STATE_UNUSED) {
-				int rfd = accept(acceptfd_http, NULL, NULL);
-				close(rfd);
-			} else {
-				receivers[i].state=STATE_WRITING;
-				receivers[i].extra = HTTP_REPLY;
-				receivers[i].extralen = strlen(HTTP_REPLY);
-				// start not from the current posistion, but somewhere in the back
-				receivers[i].state=STATE_WRITING;
-				receivers[i].pos=receivers[0].pos;
-				receivers[i].fd=accept(acceptfd_http, NULL, NULL);
-				nonblock(receivers[i].fd);
-			}
-
-		}
-
 
 		for (i=0; i<MAXFD; i++) {
 			// hateswitchcase

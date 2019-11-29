@@ -1,7 +1,7 @@
 
 #define DEBUG
 
-static bool debug=true;
+static bool debug=false;
 
 #define PORT 8899
 #define PORTBUF 8898

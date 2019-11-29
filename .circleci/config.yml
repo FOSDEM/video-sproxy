@@ -9,12 +9,14 @@ jobs:
     steps:
     - checkout
     - run: apt-get update
-    - run: apt-get -y install build-essential musl-dev musl-tools crossbuild-essential-armhf
-    - run: mkdir -v -p build/amd64 build/armhf
+    - run: apt-get -y install build-essential musl-dev musl-tools crossbuild-essential-armhf crossbuild-essential-arm64
+    - run: mkdir -v -p build/amd64 build/armhf build/arm64
     - run: make
     - run: mv -v sproxy build/amd64/sproxy
     - run: CC=arm-linux-gnueabihf-gcc make
     - run: mv -v sproxy build/armhf/sproxy
+    - run: CC=aarch64-linux-gnu-gcc make
+    - run: mv -v sproxy build/arm64/sproxy
     - persist_to_workspace:
         root: .
         paths:
@@ -33,6 +35,7 @@ jobs:
     - run: mkdir -v -p release
     - run: fakeroot tar -czvf release/sproxy-${CIRCLE_TAG}.amd64.tar.gz -C build/amd64 sproxy
     - run: fakeroot tar -czvf release/sproxy-${CIRCLE_TAG}.armhf.tar.gz -C build/armhf sproxy
+    - run: fakeroot tar -czvf release/sproxy-${CIRCLE_TAG}.arm64.tar.gz -C build/arm64 sproxy
     - run: cd release && sha256sum sproxy-*.tar.gz > sha256sums.txt
     - run: > 
         ghr \

@@ -7,9 +7,9 @@ jobs:
     - image: debian:stable
 
     steps:
-    - checkout
     - run: apt-get update
-    - run: apt-get -y install build-essential musl-dev musl-tools crossbuild-essential-armhf crossbuild-essential-arm64
+    - run: apt-get -y install build-essential git openssh-client musl-dev musl-tools crossbuild-essential-armhf crossbuild-essential-arm64
+    - checkout
     - run: mkdir -v -p build/amd64 build/armhf build/arm64
     - run: make
     - run: mv -v sproxy build/amd64/sproxy

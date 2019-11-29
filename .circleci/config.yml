@@ -4,17 +4,17 @@ version: 2.1
 jobs:
   build:
     docker:
-    - image: circleci/golang:1.11
+    - image: debian:stable
 
     steps:
     - checkout
-    - run: sudo apt-get update
-    - run: sudo apt-get -y install build-essential musl-dev musl-tools crossbuild-essential-armhf
-    - run: mkdir -v build
+    - run: apt-get update
+    - run: apt-get -y install build-essential musl-dev musl-tools crossbuild-essential-armhf
+    - run: mkdir -v -p build/amd64 build/armhf
     - run: make
-    - run: mv -v sproxy build/sproxy-amd64
+    - run: mv -v sproxy build/amd64/sproxy
     - run: CC=arm-linux-gnueabihf-gcc make
-    - run: mv -v sproxy build/sproxy-armhf
+    - run: mv -v sproxy build/armhf/sproxy
     - persist_to_workspace:
         root: .
         paths:
@@ -24,26 +24,24 @@ jobs:
 
   release:
     docker:
-    - image: circleci/golang:1.11
+    - image: cibuilds/github:0.13
 
     steps:
-    - run: sudo apt-get update
-    - run: sudo apt-get -y install fakeroot
-    - run: mkdir -v -p ${HOME}/bin
-    - run: curl -L 'https://github.com/aktau/github-release/releases/download/v0.7.2/linux-amd64-github-release.tar.bz2' | tar xvjf - --strip-components 3 -C ${HOME}/bin
+    - run: apk add fakeroot
     - attach_workspace:
         at: .
-    - run: cd build && fakeroot tar -czvf ../sproxy-${CIRCLE_TAG}.amd64.tar.gz sproxy-amd64
-    - run: cd build && fakeroot tar -czvf ../sproxy-${CIRCLE_TAG}.armhf.tar.gz sproxy-armhf
+    - run: mkdir -v -p release
+    - run: fakeroot tar -czvf release/sproxy-${CIRCLE_TAG}.amd64.tar.gz -C build/amd64 sproxy
+    - run: fakeroot tar -czvf release/sproxy-${CIRCLE_TAG}.armhf.tar.gz -C build/armhf sproxy
+    - run: cd release && sha256sum sproxy-*.tar.gz > sha256sums.txt
     - run: > 
-        for tarfile in sproxy-*.tar.gz ; do
-          ${HOME}/bin/github-release upload \
-            --user "${CIRCLE_PROJECT_USERNAME}" \
-            --repo "${CIRCLE_PROJECT_REPONAME}" \
-            --tag "${CIRCLE_TAG}" \
-            --name "${tarfile}" \
-            --file "${tarfile}"
-        done
+        ghr \
+          -u "${CIRCLE_PROJECT_USERNAME}" \
+          -r "${CIRCLE_PROJECT_REPONAME}" \
+          -c "${CIRCLE_SHA1}" \
+          -delete \
+          "${CIRCLE_TAG}" \
+          ./release/
 
 workflows:
   version: 2

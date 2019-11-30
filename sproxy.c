@@ -94,7 +94,7 @@ void setupaccepter(struct accepter *acc, int port, int http, int bufpos) {
 
 #define ACCEPTERS 3
 
-int main(){
+int main(int argc, char **argv){
 	struct receiver receivers[MAXFD+1];
 	struct accepter accepters[MAXFD];
 	fd_set reads, writes, other;
@@ -104,12 +104,16 @@ int main(){
 
 	uint8_t buffer[BUFFSIZE];
 
-	// setup stdin
+	if (argc>1 && !strcmp(*(argv+1), "--version")) {
+		printf("%s\n", VERSION);
+		exit(0);
+	}
 
 	memset(receivers, 0, sizeof(receivers));
 	memset(buffer, 0, sizeof(buffer));
 	memset(accepters, 0, sizeof(accepters));
 
+	// setup stdin
 	receivers[0].fd = STDIN_FILENO;
 	receivers[0].state = STATE_READING;
 

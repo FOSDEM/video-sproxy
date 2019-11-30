@@ -1,4 +1,6 @@
 
+#define VERSION "0.2.2"
+
 #define DEBUG
 
 static bool debug=false;

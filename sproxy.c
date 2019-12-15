@@ -62,19 +62,21 @@ struct accepter {
 
 int getlistenfd(int port) {
 	int fd;
-	struct sockaddr_in saddr;
+	struct sockaddr_in6 saddr;
 
-	ASSERTF_E((fd = socket(AF_INET, SOCK_STREAM, 0))!=-1, "socket");
+	ASSERTF_E((fd = socket(AF_INET6, SOCK_STREAM, 0))!=-1, "socket");
 
 	memset(&saddr, 0, sizeof(saddr));
-	saddr.sin_addr.s_addr = INADDR_ANY;
-	saddr.sin_port = htons(port);
-	saddr.sin_family = AF_INET;
+	saddr.sin6_addr = in6addr_any;
+	saddr.sin6_port = htons(port);
+	saddr.sin6_family = AF_INET6;
 
 	setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &(int){ 1 }, sizeof(int));
 #ifdef SO_REUSEPORT
 	setsockopt(fd, SOL_SOCKET, SO_REUSEPORT, &(int){ 1 }, sizeof(int));
 #endif
+
+	setsockopt(fd, SOL_SOCKET, IPV6_V6ONLY, &(int){ 0 }, sizeof(int));
 
 	ASSERTF_E(bind(fd, (struct sockaddr *) &saddr, sizeof(saddr))==0, "bind");
 	ASSERTF_E(listen(fd, 2)!=-1, "listen");

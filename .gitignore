@@ -1,1 +1,5 @@
 sproxy
+# Build pipline dirs
+build
+package
+release

@@ -37,7 +37,7 @@
 #define STATE_READING 1
 #define STATE_WRITING 2
 
-#define HTTP_REPLY "HTTP/1.0 200 OK\r\n\r\nConnection: close\r\nContent-Type: octet/stream\r\n\r\n"
+#define HTTP_REPLY "HTTP/1.0 200 OK\r\n\r\nServer: sproxy v"  VERSION  "\r\nConnection: close\r\nContent-Type: octet/stream\r\n\r\n"
 
 void nonblock(int fd) {
 	long flags;

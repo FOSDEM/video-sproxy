@@ -123,7 +123,7 @@ int main(int argc, char **argv){
 
 	setupaccepter(&accepters[0], PORT, 0, 0);
 	setupaccepter(&accepters[1], PORTBUF, 0, 1);
-	setupaccepter(&accepters[2], PORTHTTP, 1, 1);
+	setupaccepter(&accepters[2], PORTHTTP, 1, 0);
 
 	signal(SIGPIPE, SIG_IGN);
 

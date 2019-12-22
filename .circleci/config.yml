@@ -38,7 +38,7 @@ jobs:
     executor: ruby
 
     steps:
-    - run: install --no-document fpm
+    - run: gem install fpm
     - checkout
     - attach_workspace:
         at: .

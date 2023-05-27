@@ -42,6 +42,7 @@ jobs:
     - checkout
     - attach_workspace:
         at: .
+    - run: gem install package_cloud
     - run: mkdir -v -p release
     - run: >
         fpm -n sproxy -s dir -t deb -a amd64 -v ${CIRCLE_TAG#v} -p release \
@@ -61,13 +62,13 @@ jobs:
            build/arm64/usb_reset=/usr/bin/ \
            build/arm64/wait_next_second=/usr/bin/ \
            README.md=/usr/share/doc/sproxy/
+    - run: package_cloud push fosdem/video/debian/bullseye
     - store_artifacts:
         path: release
     - persist_to_workspace:
         root: .
         paths:
         - release
-    # TODO: Add repo publish steps: https://circleci.com/docs/2.0/packagecloud/
 
   release:
     executor: github

@@ -24,9 +24,9 @@ jobs:
     - run: make
     - run: mv -v sproxy usb_reset wait_next_second build/amd64/
     - run: CC=arm-linux-gnueabihf-gcc make
-    - run: mv -v sproxy usb_reset wait_next_second build/armhf/sproxy
+    - run: mv -v sproxy usb_reset wait_next_second build/armhf/
     - run: CC=aarch64-linux-gnu-gcc make
-    - run: mv -v sproxy usb_reset wait_next_second build/arm64/sproxy
+    - run: mv -v sproxy usb_reset wait_next_second build/arm64/
     - persist_to_workspace:
         root: .
         paths:

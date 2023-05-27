@@ -22,11 +22,11 @@ jobs:
     - checkout
     - run: mkdir -v -p build/amd64 build/armhf build/arm64
     - run: make
-    - run: mv -v sproxy build/amd64/sproxy
+    - run: mv -v sproxy usb_reset wait_next_second build/amd64/
     - run: CC=arm-linux-gnueabihf-gcc make
-    - run: mv -v sproxy build/armhf/sproxy
+    - run: mv -v sproxy usb_reset wait_next_second build/armhf/sproxy
     - run: CC=aarch64-linux-gnu-gcc make
-    - run: mv -v sproxy build/arm64/sproxy
+    - run: mv -v sproxy usb_reset wait_next_second build/arm64/sproxy
     - persist_to_workspace:
         root: .
         paths:
@@ -46,14 +46,20 @@ jobs:
     - run: >
         fpm -n sproxy -s dir -t deb -a amd64 -v ${CIRCLE_TAG#v} -p package \
            build/amd64/sproxy=/usr/bin/ \
+           build/amd64/susb_reset=/usr/bin/ \
+           build/amd64/swait_next_second=/usr/bin/ \
            README.md=/usr/share/docs/proxy/
     - run: >
         fpm -n sproxy -s dir -t deb -a armhf -v ${CIRCLE_TAG#v} -p package \
            build/armhf/sproxy=/usr/bin/ \
+           build/armhf/susb_reset=/usr/bin/ \
+           build/armhf/swait_next_second=/usr/bin/ \
            README.md=/usr/share/docs/proxy/
     - run: >
         fpm -n sproxy -s dir -t deb -a arm64 -v ${CIRCLE_TAG#v} -p package \
            build/arm64/sproxy=/usr/bin/ \
+           build/arm64/susb_reset=/usr/bin/ \
+           build/arm64/swait_next_second=/usr/bin/ \
            README.md=/usr/share/docs/proxy/
     - store_artifacts:
         path: package

@@ -46,20 +46,20 @@ jobs:
     - run: >
         fpm -n sproxy -s dir -t deb -a amd64 -v ${CIRCLE_TAG#v} -p package \
            build/amd64/sproxy=/usr/bin/ \
-           build/amd64/susb_reset=/usr/bin/ \
-           build/amd64/swait_next_second=/usr/bin/ \
+           build/amd64/usb_reset=/usr/bin/ \
+           build/amd64/wait_next_second=/usr/bin/ \
            README.md=/usr/share/docs/proxy/
     - run: >
         fpm -n sproxy -s dir -t deb -a armhf -v ${CIRCLE_TAG#v} -p package \
            build/armhf/sproxy=/usr/bin/ \
-           build/armhf/susb_reset=/usr/bin/ \
-           build/armhf/swait_next_second=/usr/bin/ \
+           build/armhf/usb_reset=/usr/bin/ \
+           build/armhf/wait_next_second=/usr/bin/ \
            README.md=/usr/share/docs/proxy/
     - run: >
         fpm -n sproxy -s dir -t deb -a arm64 -v ${CIRCLE_TAG#v} -p package \
            build/arm64/sproxy=/usr/bin/ \
-           build/arm64/susb_reset=/usr/bin/ \
-           build/arm64/swait_next_second=/usr/bin/ \
+           build/arm64/usb_reset=/usr/bin/ \
+           build/arm64/wait_next_second=/usr/bin/ \
            README.md=/usr/share/docs/proxy/
     - store_artifacts:
         path: package

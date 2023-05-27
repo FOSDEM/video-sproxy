@@ -48,21 +48,21 @@ jobs:
            build/amd64/sproxy=/usr/bin/ \
            build/amd64/usb_reset=/usr/bin/ \
            build/amd64/wait_next_second=/usr/bin/ \
-           README.md=/usr/share/docs/proxy/
+           README.md=/usr/share/doc/sproxy/
     - run: >
         fpm -n sproxy -s dir -t deb -a armhf -v ${CIRCLE_TAG#v} -p package \
            build/armhf/sproxy=/usr/bin/ \
            build/armhf/usb_reset=/usr/bin/ \
            build/armhf/wait_next_second=/usr/bin/ \
-           README.md=/usr/share/docs/proxy/
+           README.md=/usr/share/doc/sproxy/
     - run: >
         fpm -n sproxy -s dir -t deb -a arm64 -v ${CIRCLE_TAG#v} -p package \
            build/arm64/sproxy=/usr/bin/ \
            build/arm64/usb_reset=/usr/bin/ \
            build/arm64/wait_next_second=/usr/bin/ \
-           README.md=/usr/share/docs/proxy/
+           README.md=/usr/share/doc/sproxy/
     - store_artifacts:
-        path: package
+        path: release
     # TODO: Add repo publish steps: https://circleci.com/docs/2.0/packagecloud/
 
   release:
@@ -73,10 +73,10 @@ jobs:
     - attach_workspace:
         at: .
     - run: mkdir -v -p release
-    - run: fakeroot tar -czvf release/sproxy-${CIRCLE_TAG}.amd64.tar.gz -C build/amd64 sproxy
-    - run: fakeroot tar -czvf release/sproxy-${CIRCLE_TAG}.armhf.tar.gz -C build/armhf sproxy
-    - run: fakeroot tar -czvf release/sproxy-${CIRCLE_TAG}.arm64.tar.gz -C build/arm64 sproxy
-    - run: cd release && sha256sum sproxy-*.tar.gz > sha256sums.txt
+    - run: fakeroot tar -czvf release/sproxy-${CIRCLE_TAG}.amd64.tar.gz -C build/amd64 sproxy usb_reset wait_next_second
+    - run: fakeroot tar -czvf release/sproxy-${CIRCLE_TAG}.armhf.tar.gz -C build/armhf sproxy usb_reset wait_next_second
+    - run: fakeroot tar -czvf release/sproxy-${CIRCLE_TAG}.arm64.tar.gz -C build/arm64 sproxy usb_reset wait_next_second
+    - run: cd release && sha256sum sproxy-*.tar.gz *deb > sha256sums.txt
     - run: > 
         ghr \
           -u "${CIRCLE_PROJECT_USERNAME}" \

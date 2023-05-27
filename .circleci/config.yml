@@ -63,6 +63,10 @@ jobs:
            README.md=/usr/share/doc/sproxy/
     - store_artifacts:
         path: release
+    - persist_to_workspace:
+        root: .
+        paths:
+        - release
     # TODO: Add repo publish steps: https://circleci.com/docs/2.0/packagecloud/
 
   release:

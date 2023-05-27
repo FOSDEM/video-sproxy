@@ -42,21 +42,21 @@ jobs:
     - checkout
     - attach_workspace:
         at: .
-    - run: mkdir -v -p package
+    - run: mkdir -v -p release
     - run: >
-        fpm -n sproxy -s dir -t deb -a amd64 -v ${CIRCLE_TAG#v} -p package \
+        fpm -n sproxy -s dir -t deb -a amd64 -v ${CIRCLE_TAG#v} -p release \
            build/amd64/sproxy=/usr/bin/ \
            build/amd64/usb_reset=/usr/bin/ \
            build/amd64/wait_next_second=/usr/bin/ \
            README.md=/usr/share/doc/sproxy/
     - run: >
-        fpm -n sproxy -s dir -t deb -a armhf -v ${CIRCLE_TAG#v} -p package \
+        fpm -n sproxy -s dir -t deb -a armhf -v ${CIRCLE_TAG#v} -p release \
            build/armhf/sproxy=/usr/bin/ \
            build/armhf/usb_reset=/usr/bin/ \
            build/armhf/wait_next_second=/usr/bin/ \
            README.md=/usr/share/doc/sproxy/
     - run: >
-        fpm -n sproxy -s dir -t deb -a arm64 -v ${CIRCLE_TAG#v} -p package \
+        fpm -n sproxy -s dir -t deb -a arm64 -v ${CIRCLE_TAG#v} -p release \
            build/arm64/sproxy=/usr/bin/ \
            build/arm64/usb_reset=/usr/bin/ \
            build/arm64/wait_next_second=/usr/bin/ \

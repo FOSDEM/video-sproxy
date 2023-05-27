@@ -62,7 +62,7 @@ jobs:
            build/arm64/usb_reset=/usr/bin/ \
            build/arm64/wait_next_second=/usr/bin/ \
            README.md=/usr/share/doc/sproxy/
-    - run: package_cloud push fosdem/video/debian/bullseye release/*deb
+    - run: package_cloud push fosdem/video-team/debian/bullseye release/*deb
     - store_artifacts:
         path: release
     - persist_to_workspace:

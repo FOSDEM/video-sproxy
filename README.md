@@ -2,7 +2,7 @@
 
 [![CircleCI](https://circleci.com/gh/FOSDEM/video-sproxy.svg?style=svg)](https://circleci.com/gh/FOSDEM/video-sproxy)
 
-Usage: ffmpeg... | ./sproxy
+Usage: ffmpeg... | ./sproxy [portshift]
 
 It will listen on port 8899 and send whatever is currently being received from
 stdin. It'll also drop slow readers.
@@ -13,6 +13,9 @@ something).
 
 And, it will listen on port 80, and will respond with a HTTP reply that's
 pretty much the same as 8899.
+
+All ports can be shifted with between 2 and 10000, if a command line option
+is passed.
 
 It's currently built dynamically (was static with musl), but we've moved to
 normal plackages.

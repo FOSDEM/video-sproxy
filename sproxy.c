@@ -101,6 +101,7 @@ int main(int argc, char **argv){
 	struct accepter accepters[MAXFD];
 	fd_set reads, writes, other;
 	int i;
+	int portshift = 0;
 	ssize_t sz;
 	struct timeval to;
 
@@ -109,6 +110,14 @@ int main(int argc, char **argv){
 	if (argc>1 && !strcmp(*(argv+1), "--version")) {
 		printf("%s\n", VERSION);
 		exit(0);
+	}
+
+	if (argc>1) {
+		portshift = atoi( *(argv+1) );
+		if (portshift<2 || portshift>10000) {
+			printf("portshift (if specified) needs to be between 2 and 10000\n");
+			exit(1);
+		}
 	}
 
 	memset(receivers, 0, sizeof(receivers));
@@ -121,9 +130,9 @@ int main(int argc, char **argv){
 
 	nonblock(receivers[0].fd);
 
-	setupaccepter(&accepters[0], PORT, 0, 0);
-	setupaccepter(&accepters[1], PORTBUF, 0, 1);
-	setupaccepter(&accepters[2], PORTHTTP, 1, 0);
+	setupaccepter(&accepters[0], PORT + portshift, 0, 0);
+	setupaccepter(&accepters[1], PORTBUF + portshift, 0, 1);
+	setupaccepter(&accepters[2], PORTHTTP + portshift, 1, 0);
 
 	signal(SIGPIPE, SIG_IGN);
 

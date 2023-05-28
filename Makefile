@@ -1,6 +1,5 @@
 # Defaults
-CC      ?= musl-gcc
-CC_OPTS ?= -Wall -O3 -g -static
+CC_OPTS ?= -Wall -O3 -g
 
 TARGETS=sproxy wait_next_second usb_reset
 

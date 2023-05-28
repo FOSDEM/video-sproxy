@@ -14,9 +14,19 @@ something).
 And, it will listen on port 80, and will respond with a HTTP reply that's
 pretty much the same as 8899.
 
-Currently the make file builds a static binary with musl, you can switch
-to glibc for local debugging/testing.
+It's currently built dynamically (was static with musl), but we've moved to
+normal plackages.
 
+# Extras
+
+There are two extra tools in the repository, needed by the FOSDEM video team:
+
+* `usb_reset` - reset an USB device by the /dev/bus/usb/BUS/DEV path
+* `wait_next_second` - sleep until the next exact second
+
+# Availability
+
+Currently, the pre-built debian packages are available at https://packagecloud.io/fosdem/video-team
 
 # TODO
 

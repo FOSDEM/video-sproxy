@@ -55,24 +55,24 @@ jobs:
         paths:
         - release
 
-  release:
-    executor: github
-
-    steps:
-    - run: apk add fakeroot
-    - attach_workspace:
-        at: .
-    - run: mkdir -v -p release
-    - run: fakeroot tar -czvf release/sproxy-${CIRCLE_TAG}.amd64.tar.gz -C build/amd64 sproxy usb_reset wait_next_second cursor_disable.so
-    - run: cd release && sha256sum sproxy-*.tar.gz *deb > sha256sums.txt
-    - run: > 
-        ghr \
-          -u "${CIRCLE_PROJECT_USERNAME}" \
-          -r "${CIRCLE_PROJECT_REPONAME}" \
-          -c "${CIRCLE_SHA1}" \
-          -delete \
-          "${CIRCLE_TAG}" \
-          ./release/
+#  release:
+#    executor: github
+#
+#    steps:
+#    - run: apk add fakeroot
+#    - attach_workspace:
+#        at: .
+#    - run: mkdir -v -p release
+#    - run: fakeroot tar -czvf release/sproxy-${CIRCLE_TAG}.amd64.tar.gz -C build/amd64 sproxy usb_reset wait_next_second cursor_disable.so
+#    - run: cd release && sha256sum sproxy-*.tar.gz *deb > sha256sums.txt
+#    - run: > 
+#        ghr \
+#          -u "${CIRCLE_PROJECT_USERNAME}" \
+#          -r "${CIRCLE_PROJECT_REPONAME}" \
+#          -c "${CIRCLE_SHA1}" \
+#          -delete \
+#          "${CIRCLE_TAG}" \
+#          ./release/
 
 workflows:
   version: 2

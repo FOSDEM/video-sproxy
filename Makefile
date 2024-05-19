@@ -1,7 +1,7 @@
 # Defaults
 CC_OPTS ?= -Wall -O3 -g
 
-TARGETS=sproxy wait_next_second usb_reset
+TARGETS=sproxy wait_next_second usb_reset cursor_disable.so
 
 all: $(TARGETS)
 
@@ -13,6 +13,9 @@ usb_reset: usb_reset.c
 
 sproxy: sproxy.c config.h
 	$(CC) $(CC_OPTS) -o $@ sproxy.c
+
+cursor_disable.so: cursor_disable.c
+	$(CC) -fPIC -shared -o $@ $^ -ldl
 
 install: $(TARGETS)
 	install $(TARGETS) /usr/local/bin/

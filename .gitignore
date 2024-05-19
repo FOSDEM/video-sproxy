@@ -1,4 +1,7 @@
 sproxy
+usb_reset
+wait_next_second
+*.so
 # Build pipline dirs
 build
 package

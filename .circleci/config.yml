@@ -18,15 +18,11 @@ jobs:
 
     steps:
     - run: apt-get update
-    - run: apt-get -y install build-essential git openssh-client musl-dev musl-tools crossbuild-essential-armhf crossbuild-essential-arm64
+    - run: apt-get -y install build-essential git openssh-client musl-dev musl-tools libsdl2-dev
     - checkout
-    - run: mkdir -v -p build/amd64 build/armhf build/arm64
+    - run: mkdir -v -p build/amd64
     - run: make
-    - run: mv -v sproxy usb_reset wait_next_second build/amd64/
-    - run: CC=arm-linux-gnueabihf-gcc make
-    - run: mv -v sproxy usb_reset wait_next_second build/armhf/
-    - run: CC=aarch64-linux-gnu-gcc make
-    - run: mv -v sproxy usb_reset wait_next_second build/arm64/
+    - run: mv -v sproxy usb_reset wait_next_second cursor_disable.so build/amd64/
     - persist_to_workspace:
         root: .
         paths:
@@ -49,18 +45,7 @@ jobs:
            build/amd64/sproxy=/usr/bin/ \
            build/amd64/usb_reset=/usr/bin/ \
            build/amd64/wait_next_second=/usr/bin/ \
-           README.md=/usr/share/doc/sproxy/
-    - run: >
-        fpm -n sproxy -s dir -t deb -a armhf -v ${CIRCLE_TAG#v} -p release \
-           build/armhf/sproxy=/usr/bin/ \
-           build/armhf/usb_reset=/usr/bin/ \
-           build/armhf/wait_next_second=/usr/bin/ \
-           README.md=/usr/share/doc/sproxy/
-    - run: >
-        fpm -n sproxy -s dir -t deb -a arm64 -v ${CIRCLE_TAG#v} -p release \
-           build/arm64/sproxy=/usr/bin/ \
-           build/arm64/usb_reset=/usr/bin/ \
-           build/arm64/wait_next_second=/usr/bin/ \
+           build/amd64/cursor_disable.so=/usr/lib/ \
            README.md=/usr/share/doc/sproxy/
     - run: package_cloud push fosdem/video-team/debian/bookworm release/*deb
     - store_artifacts:
@@ -78,9 +63,7 @@ jobs:
     - attach_workspace:
         at: .
     - run: mkdir -v -p release
-    - run: fakeroot tar -czvf release/sproxy-${CIRCLE_TAG}.amd64.tar.gz -C build/amd64 sproxy usb_reset wait_next_second
-    - run: fakeroot tar -czvf release/sproxy-${CIRCLE_TAG}.armhf.tar.gz -C build/armhf sproxy usb_reset wait_next_second
-    - run: fakeroot tar -czvf release/sproxy-${CIRCLE_TAG}.arm64.tar.gz -C build/arm64 sproxy usb_reset wait_next_second
+    - run: fakeroot tar -czvf release/sproxy-${CIRCLE_TAG}.amd64.tar.gz -C build/amd64 sproxy usb_reset wait_next_second cursor_disable.so
     - run: cd release && sha256sum sproxy-*.tar.gz *deb > sha256sums.txt
     - run: > 
         ghr \

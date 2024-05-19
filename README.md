@@ -22,10 +22,11 @@ normal plackages.
 
 # Extras
 
-There are two extra tools in the repository, needed by the FOSDEM video team:
+There are three extra tools in the repository, needed by the FOSDEM video team:
 
 * `usb_reset` - reset an USB device by the /dev/bus/usb/BUS/DEV path
 * `wait_next_second` - sleep until the next exact second
+* `cursor_disable.so` - a .so preloaded before ffmpeg to hide the SDL cursor
 
 # Availability
 

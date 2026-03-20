@@ -48,6 +48,7 @@ jobs:
            build/amd64/cursor_disable.so=/usr/lib/ \
            README.md=/usr/share/doc/sproxy/
     - run: package_cloud push fosdem/video-team/debian/bookworm release/*deb
+    - run: package_cloud push fosdem/video-team/debian/trixie release/*deb
     - store_artifacts:
         path: release
     - persist_to_workspace:

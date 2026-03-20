@@ -19,7 +19,7 @@ jobs:
     steps:
     - run: apt-get update
     - run: apt-get -y install build-essential git openssh-client musl-dev musl-tools libsdl2-dev
-    - checkout
+    - run: git clone https://github.com/FOSDEM/video-sproxy .
     - run: mkdir -v -p build/amd64
     - run: make
     - run: mv -v sproxy usb_reset wait_next_second cursor_disable.so build/amd64/
@@ -35,7 +35,7 @@ jobs:
 
     steps:
     - run: gem install fpm
-    - checkout
+    - run: git clone https://github.com/FOSDEM/video-sproxy .
     - attach_workspace:
         at: .
     - run: gem install package_cloud
